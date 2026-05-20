@@ -33,12 +33,17 @@ Or:
 ```bash
 ./bin/pswitch
 ./bin/pswitch --config ./config.toml
+./bin/pswitch --listen 0.0.0.0:8080 --mode least_failures --failure-threshold 2 --cooldown 30s --health-check-interval 20s --health-check-timeout 5s
 ```
 
 Options:
 
 - `--listen`
 - `--mode`
+- `--failure-threshold`
+- `--cooldown`
+- `--health-check-interval`
+- `--health-check-timeout`
 - `--log-color=true|false`
 
 Notes:

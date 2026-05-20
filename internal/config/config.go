@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	defaultListen              = "127.0.0.1:8080"
+	defaultListen              = "0.0.0.0:8080"
 	defaultMode                = "round_robin"
 	defaultFailureThreshold    = 1
 	defaultCooldown            = 20 * time.Second

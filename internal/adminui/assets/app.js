@@ -1222,21 +1222,11 @@ function formatNumber(value) {
 }
 
 function formatTokenCount(value) {
-  const number = Number(value || 0);
-  if (Math.abs(number) < 10000) {
-    return formatNumber(number);
-  }
-  return new Intl.NumberFormat(state.locale, {
-    notation: "compact",
-    maximumFractionDigits: number >= 100000000 ? 0 : 1
-  }).format(number);
+  return formatAbbreviated(value);
 }
 
 function formatCompact(value) {
-  return new Intl.NumberFormat(state.locale, {
-    notation: "compact",
-    maximumFractionDigits: 1
-  }).format(Number(value || 0));
+  return formatAbbreviated(value);
 }
 
 function formatDateTime(value) {
@@ -1254,6 +1244,30 @@ function formatDateTime(value) {
 
 function joinMetrics(items) {
   return items.map(([label, value]) => `${label} ${formatCompact(value)}`).join(" · ");
+}
+
+function formatAbbreviated(value) {
+  const number = Number(value || 0);
+  const abs = Math.abs(number);
+
+  if (abs < 1000) {
+    return formatNumber(number);
+  }
+
+  if (abs >= 1000000000) {
+    return `${formatAbbreviatedValue(number / 1000000000, abs >= 100000000000 ? 0 : 1)}B`;
+  }
+  if (abs >= 1000000) {
+    return `${formatAbbreviatedValue(number / 1000000, abs >= 100000000 ? 0 : 1)}M`;
+  }
+  return `${formatAbbreviatedValue(number / 1000, abs >= 100000 ? 0 : 1)}K`;
+}
+
+function formatAbbreviatedValue(value, maxFractionDigits) {
+  return new Intl.NumberFormat(state.locale, {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: maxFractionDigits
+  }).format(value);
 }
 
 function formatModeLabel(mode) {

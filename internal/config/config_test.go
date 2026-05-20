@@ -83,7 +83,7 @@ api_key = "k1"
 		t.Fatal(err)
 	}
 
-	if got, want := cfg.Listen, "127.0.0.1:8080"; got != want {
+	if got, want := cfg.Listen, "0.0.0.0:8080"; got != want {
 		t.Fatalf("listen = %q, want %q", got, want)
 	}
 	if got, want := cfg.Mode, "round_robin"; got != want {
@@ -139,7 +139,7 @@ func TestLoadAllowsEmptyFileWithDefaultRoutesAndNoProviders(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if got, want := cfg.Listen, "127.0.0.1:8080"; got != want {
+	if got, want := cfg.Listen, "0.0.0.0:8080"; got != want {
 		t.Fatalf("listen = %q, want %q", got, want)
 	}
 	if got, want := len(cfg.Routes), 1; got != want {

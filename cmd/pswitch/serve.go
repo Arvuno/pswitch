@@ -4,11 +4,13 @@ import (
 	"context"
 	"errors"
 	"flag"
+	"fmt"
 	"net"
 	"net/http"
 	"os"
 	"os/signal"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
@@ -20,14 +22,28 @@ import (
 )
 
 type serveArgs struct {
-	ConfigPath string
-	Listen     string
-	Mode       string
-	LogColor   *bool
+	ConfigPath          string
+	Listen              string
+	Mode                string
+	FailureThreshold    *int
+	Cooldown            *time.Duration
+	HealthCheckInterval *time.Duration
+	HealthCheckTimeout  *time.Duration
+	LogColor            *bool
 }
 
 type triStateBool struct {
 	value bool
+	set   bool
+}
+
+type optionalInt struct {
+	value int
+	set   bool
+}
+
+type optionalDuration struct {
+	value time.Duration
 	set   bool
 }
 
@@ -59,6 +75,40 @@ func (b *triStateBool) IsBoolFlag() bool {
 	return true
 }
 
+func (o *optionalInt) String() string {
+	if !o.set {
+		return ""
+	}
+	return fmt.Sprintf("%d", o.value)
+}
+
+func (o *optionalInt) Set(value string) error {
+	parsed, err := strconv.Atoi(value)
+	if err != nil {
+		return err
+	}
+	o.value = parsed
+	o.set = true
+	return nil
+}
+
+func (o *optionalDuration) String() string {
+	if !o.set {
+		return ""
+	}
+	return o.value.String()
+}
+
+func (o *optionalDuration) Set(value string) error {
+	parsed, err := time.ParseDuration(value)
+	if err != nil {
+		return err
+	}
+	o.value = parsed
+	o.set = true
+	return nil
+}
+
 func parseServeArgs(args []string) (serveArgs, error) {
 	fs := flag.NewFlagSet("serve", flag.ContinueOnError)
 	fs.SetOutput(os.Stderr)
@@ -66,6 +116,14 @@ func parseServeArgs(args []string) (serveArgs, error) {
 	configPath := fs.String("config", defaultConfigPath(mustExecutablePath()), "path to TOML config")
 	overrideListen := fs.String("listen", "", "optional listen address override")
 	overrideMode := fs.String("mode", "", "optional mode override: sequential, round_robin, or least_failures")
+	var overrideFailureThreshold optionalInt
+	var overrideCooldown optionalDuration
+	var overrideHealthCheckInterval optionalDuration
+	var overrideHealthCheckTimeout optionalDuration
+	fs.Var(&overrideFailureThreshold, "failure-threshold", "optional failure threshold override")
+	fs.Var(&overrideCooldown, "cooldown", "optional cooldown override")
+	fs.Var(&overrideHealthCheckInterval, "health-check-interval", "optional health check interval override")
+	fs.Var(&overrideHealthCheckTimeout, "health-check-timeout", "optional health check timeout override")
 	var logColor triStateBool
 	fs.Var(&logColor, "log-color", "enable or disable colored logs")
 
@@ -77,6 +135,18 @@ func parseServeArgs(args []string) (serveArgs, error) {
 		ConfigPath: *configPath,
 		Listen:     *overrideListen,
 		Mode:       *overrideMode,
+	}
+	if overrideFailureThreshold.set {
+		out.FailureThreshold = &overrideFailureThreshold.value
+	}
+	if overrideCooldown.set {
+		out.Cooldown = &overrideCooldown.value
+	}
+	if overrideHealthCheckInterval.set {
+		out.HealthCheckInterval = &overrideHealthCheckInterval.value
+	}
+	if overrideHealthCheckTimeout.set {
+		out.HealthCheckTimeout = &overrideHealthCheckTimeout.value
 	}
 	if logColor.set {
 		out.LogColor = &logColor.value
@@ -101,12 +171,7 @@ func runServe(args []string) error {
 	if err != nil {
 		return err
 	}
-	if parsed.Listen != "" {
-		cfg.Listen = parsed.Listen
-	}
-	if parsed.Mode != "" {
-		cfg.Mode = parsed.Mode
-	}
+	applyServeOverrides(&cfg, parsed)
 	if err := cfg.Validate(); err != nil {
 		return err
 	}
@@ -233,6 +298,27 @@ func defaultSettingsPath(stateDir string) string {
 
 func defaultMetricsPath(stateDir string) string {
 	return filepath.Join(stateDir, "metrics.json")
+}
+
+func applyServeOverrides(cfg *config.Config, args serveArgs) {
+	if args.Listen != "" {
+		cfg.Listen = args.Listen
+	}
+	if args.Mode != "" {
+		cfg.Mode = args.Mode
+	}
+	if args.FailureThreshold != nil {
+		cfg.FailureThreshold = *args.FailureThreshold
+	}
+	if args.Cooldown != nil {
+		cfg.Cooldown = *args.Cooldown
+	}
+	if args.HealthCheckInterval != nil {
+		cfg.HealthCheckInterval = *args.HealthCheckInterval
+	}
+	if args.HealthCheckTimeout != nil {
+		cfg.HealthCheckTimeout = *args.HealthCheckTimeout
+	}
 }
 
 func mustExecutablePath() string {

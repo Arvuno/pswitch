@@ -25,5 +25,5 @@ func usage() {
 
 Usage:
   pswitch init [--config PATH] [--force]
-  pswitch [--config PATH] [--listen ADDR] [--mode sequential|round_robin|least_failures] [--log-color[=true|false]]`)
+  pswitch [--config PATH] [--listen ADDR] [--mode sequential|round_robin|least_failures] [--failure-threshold N] [--cooldown DURATION] [--health-check-interval DURATION] [--health-check-timeout DURATION] [--log-color[=true|false]]`)
 }

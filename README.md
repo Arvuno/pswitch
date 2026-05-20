@@ -88,7 +88,7 @@ If no config file exists, `pswitch` starts with the built-in default config.
 
 Default startup behavior:
 
-- listen on `127.0.0.1:8080`
+- listen on `0.0.0.0:8080`
 - use `round_robin` mode
 - expose one route: `/codex`
 - start with no preconfigured providers
@@ -184,7 +184,7 @@ If `PSWITCH_ADMIN_TOKEN` is set, both the dashboard UI and admin API require it.
 Run directly:
 
 ```bash
-pswitch [--config PATH] [--listen ADDR] [--mode sequential|round_robin|least_failures] [--log-color[=true|false]]
+pswitch [--config PATH] [--listen ADDR] [--mode sequential|round_robin|least_failures] [--failure-threshold N] [--cooldown DURATION] [--health-check-interval DURATION] [--health-check-timeout DURATION] [--log-color[=true|false]]
 ```
 
 Generate a starter config:

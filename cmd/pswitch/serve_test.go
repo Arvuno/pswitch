@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"pswitch/internal/config"
 )
@@ -32,6 +33,39 @@ func TestParseLogColorOverride(t *testing.T) {
 	}
 }
 
+func TestParseServeArgsSupportsGeneralOverrides(t *testing.T) {
+	got, err := parseServeArgs([]string{
+		"--listen", "0.0.0.0:8080",
+		"--mode", "least_failures",
+		"--failure-threshold", "3",
+		"--cooldown", "45s",
+		"--health-check-interval", "30s",
+		"--health-check-timeout", "5s",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if got.Listen != "0.0.0.0:8080" {
+		t.Fatalf("listen = %q, want %q", got.Listen, "0.0.0.0:8080")
+	}
+	if got.Mode != "least_failures" {
+		t.Fatalf("mode = %q, want %q", got.Mode, "least_failures")
+	}
+	if got.FailureThreshold == nil || *got.FailureThreshold != 3 {
+		t.Fatalf("failure threshold = %v, want %d", got.FailureThreshold, 3)
+	}
+	if got.Cooldown == nil || *got.Cooldown != 45*time.Second {
+		t.Fatalf("cooldown = %v, want %s", got.Cooldown, 45*time.Second)
+	}
+	if got.HealthCheckInterval == nil || *got.HealthCheckInterval != 30*time.Second {
+		t.Fatalf("health check interval = %v, want %s", got.HealthCheckInterval, 30*time.Second)
+	}
+	if got.HealthCheckTimeout == nil || *got.HealthCheckTimeout != 5*time.Second {
+		t.Fatalf("health check timeout = %v, want %s", got.HealthCheckTimeout, 5*time.Second)
+	}
+}
+
 func TestLoadStartupConfigFallsBackToDefaultWhenMissing(t *testing.T) {
 	path := t.TempDir() + "/missing.toml"
 
@@ -40,7 +74,7 @@ func TestLoadStartupConfigFallsBackToDefaultWhenMissing(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if got, want := cfg.Listen, "127.0.0.1:8080"; got != want {
+	if got, want := cfg.Listen, "0.0.0.0:8080"; got != want {
 		t.Fatalf("listen = %q, want %q", got, want)
 	}
 	if got, want := len(cfg.Providers), 0; got != want {
@@ -86,6 +120,38 @@ func TestLoadStartupConfigPrefersSettingsJSONWhenPresent(t *testing.T) {
 	}
 	if len(got.Providers) != 1 || got.Providers[0].Name != "from-settings" {
 		t.Fatalf("providers = %#v, want settings override", got.Providers)
+	}
+}
+
+func TestApplyServeOverridesUpdatesGeneralSettings(t *testing.T) {
+	cfg := config.Default()
+
+	applyServeOverrides(&cfg, serveArgs{
+		Listen:              "0.0.0.0:8080",
+		Mode:                "least_failures",
+		FailureThreshold:    intPtr(4),
+		Cooldown:            durationPtr(50 * time.Second),
+		HealthCheckInterval: durationPtr(40 * time.Second),
+		HealthCheckTimeout:  durationPtr(6 * time.Second),
+	})
+
+	if cfg.Listen != "0.0.0.0:8080" {
+		t.Fatalf("listen = %q, want %q", cfg.Listen, "0.0.0.0:8080")
+	}
+	if cfg.Mode != "least_failures" {
+		t.Fatalf("mode = %q, want %q", cfg.Mode, "least_failures")
+	}
+	if cfg.FailureThreshold != 4 {
+		t.Fatalf("failure threshold = %d, want %d", cfg.FailureThreshold, 4)
+	}
+	if cfg.Cooldown != 50*time.Second {
+		t.Fatalf("cooldown = %s, want %s", cfg.Cooldown, 50*time.Second)
+	}
+	if cfg.HealthCheckInterval != 40*time.Second {
+		t.Fatalf("health check interval = %s, want %s", cfg.HealthCheckInterval, 40*time.Second)
+	}
+	if cfg.HealthCheckTimeout != 6*time.Second {
+		t.Fatalf("health check timeout = %s, want %s", cfg.HealthCheckTimeout, 6*time.Second)
 	}
 }
 
@@ -148,4 +214,12 @@ func sameBoolPtr(a, b *bool) bool {
 		return a == nil && b == nil
 	}
 	return *a == *b
+}
+
+func intPtr(v int) *int {
+	return &v
+}
+
+func durationPtr(v time.Duration) *time.Duration {
+	return &v
 }
