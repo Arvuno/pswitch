@@ -1,0 +1,26 @@
+.idea/
+.codex/
+bin/
+psw/
+.superpowers/
+docs/superpowers/
+
+# Go
+*.test
+*.out
+coverage.txt
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# Local env / secrets
+.env
+.env.*
+config.toml
+settings.json
+metrics.json
+*.bak

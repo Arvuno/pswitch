@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>pswitch admin</title>
+    <link rel="icon" href="./icon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="./style.css">
+  </head>
+  <body>
+    <main class="app-shell">
+      <aside class="sidebar">
+        <div class="brand-block">
+          <p class="brand-kicker">pswitch admin</p>
+          <h1 data-i18n="brand.title">Operations Hub</h1>
+          <p class="brand-copy" data-i18n="brand.subtitle">A clean admin dashboard for usage, provider health, and runtime configuration.</p>
+        </div>
+
+        <nav class="sidebar-nav">
+          <button class="nav-button active" type="button" data-tab="overview">
+            <span class="nav-index">01</span>
+            <span data-i18n="tabs.overview">Overview</span>
+          </button>
+          <button class="nav-button" type="button" data-tab="usage">
+            <span class="nav-index">02</span>
+            <span data-i18n="tabs.usage">Usage</span>
+          </button>
+          <button class="nav-button" type="button" data-tab="providers">
+            <span class="nav-index">03</span>
+            <span data-i18n="tabs.providers">Providers</span>
+          </button>
+          <button class="nav-button" type="button" data-tab="config">
+            <span class="nav-index">04</span>
+            <span data-i18n="tabs.config">Config</span>
+          </button>
+        </nav>
+
+        <section class="sidebar-status">
+          <div class="status-chip">
+            <span data-i18n="common.language">Language</span>
+            <select id="language-switch" aria-label="Language">
+              <option value="en">English</option>
+              <option value="zh-CN">中文</option>
+            </select>
+          </div>
+          <div class="status-chip">
+            <span data-i18n="common.updated">Updated</span>
+            <strong id="last-updated">-</strong>
+          </div>
+        </section>
+      </aside>
+
+      <section class="workspace">
+        <header class="topbar">
+          <div class="topbar-copy">
+            <p class="topbar-kicker" data-i18n="topbar.kicker">Monitoring first</p>
+            <h2 id="panel-title" data-i18n="topbar.overview">Service overview</h2>
+            <p id="panel-description" class="topbar-description" data-i18n="topbar.overviewDesc">Focus on request volume, token consumption, and provider health.</p>
+          </div>
+
+          <div class="topbar-actions">
+            <button id="refresh-button" type="button" class="secondary-button" data-i18n="common.refresh">Refresh</button>
+
+            <div class="topbar-meta">
+              <div class="meta-card">
+                <span data-i18n="overview.healthyProviders">Healthy providers</span>
+                <strong id="topbar-healthy">-</strong>
+              </div>
+              <div class="meta-card">
+                <span data-i18n="overview.totalRequests">Total requests</span>
+                <strong id="topbar-requests">-</strong>
+              </div>
+              <div class="meta-card">
+                <span data-i18n="overview.totalTokens">Total tokens</span>
+                <strong id="topbar-tokens">-</strong>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <section id="auth-card" class="message-card hidden">
+          <h3 data-i18n="auth.title">Admin token required</h3>
+          <p><span data-i18n="auth.subtitle">Enter</span> <code>PSWITCH_ADMIN_TOKEN</code> <span data-i18n="auth.suffix">to continue.</span></p>
+          <form id="auth-form" class="auth-form">
+            <input id="token-input" type="password" placeholder="Admin token">
+            <button type="submit" class="primary-button" data-i18n="auth.unlock">Unlock</button>
+          </form>
+        </section>
+
+        <section id="message" class="message-card hidden"></section>
+
+        <div class="screen-stack">
+          <section id="panel-overview" class="screen active">
+            <div class="screen-layout overview-screen">
+              <section class="surface hero-surface">
+                <div class="surface-header">
+                  <div>
+                    <p class="surface-kicker" data-i18n="overview.kicker">Key metrics</p>
+                    <h3 data-i18n="overview.heading">What matters right now</h3>
+                  </div>
+                </div>
+                <div id="kpi-grid" class="kpi-grid"></div>
+              </section>
+
+              <section class="surface runtime-surface">
+                <div class="surface-header">
+                  <div>
+                    <p class="surface-kicker" data-i18n="overview.snapshotKicker">Runtime snapshot</p>
+                    <h3 data-i18n="overview.snapshotHeading">Current service state</h3>
+                  </div>
+                </div>
+                <div id="runtime-summary" class="runtime-summary"></div>
+                <div id="overview-window-grid" class="window-brief-grid"></div>
+              </section>
+
+              <section class="surface spotlight-surface">
+                <div class="surface-header">
+                  <div>
+                    <p class="surface-kicker" data-i18n="providers.spotlightKicker">Provider spotlight</p>
+                    <h3 data-i18n="providers.spotlightHeading">Top providers by token usage</h3>
+                  </div>
+                </div>
+                <div id="provider-spotlight" class="provider-spotlight"></div>
+              </section>
+
+              <section class="surface trend-surface">
+                <div class="surface-header">
+                  <div>
+                    <p class="surface-kicker" data-i18n="usage.trendKicker">Trend view</p>
+                    <h3 data-i18n="usage.trendHeading">Token activity</h3>
+                  </div>
+                  <span class="surface-note" data-i18n="usage.trendMeta">Each bar shows total tokens per bucket.</span>
+                </div>
+                <div class="chart-card chart-card-large">
+                  <div class="chart-title" data-i18n="sections.hourly24h">Hourly 24h</div>
+                  <div id="overview-hourly-chart" class="bars bars-wide"></div>
+                </div>
+              </section>
+
+              <section class="surface model-surface">
+                <div class="surface-header">
+                  <div>
+                    <p class="surface-kicker" data-i18n="models.kicker">Model usage</p>
+                    <h3 data-i18n="models.heading">Usage by model</h3>
+                  </div>
+                </div>
+                <div id="model-usage-grid" class="model-usage-grid"></div>
+              </section>
+            </div>
+          </section>
+
+          <section id="panel-usage" class="screen">
+            <div class="screen-layout usage-screen">
+              <section class="surface usage-window-surface">
+                <div class="surface-header">
+                  <div>
+                    <p class="surface-kicker" data-i18n="usage.kicker">Time windows</p>
+                    <h3 data-i18n="usage.heading">24h and 7d usage</h3>
+                  </div>
+                </div>
+                <div id="usage-panels" class="window-grid"></div>
+              </section>
+
+              <section class="surface usage-chart-surface">
+                <div class="surface-header">
+                  <div>
+                    <p class="surface-kicker" data-i18n="usage.trendKicker">Trends</p>
+                    <h3 data-i18n="usage.trendHeading">Token activity</h3>
+                  </div>
+                </div>
+
+                <div class="chart-stack two-column">
+                  <div class="chart-card">
+                    <div class="chart-title" data-i18n="sections.hourly24h">Hourly 24h</div>
+                    <div id="hourly-chart" class="bars"></div>
+                  </div>
+
+                  <div class="chart-card">
+                    <div class="chart-title" data-i18n="sections.daily7d">Daily 7d</div>
+                    <div id="daily-chart" class="bars bars-short"></div>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </section>
+
+          <section id="panel-providers" class="screen">
+            <div class="screen-layout providers-screen">
+              <section class="surface provider-summary-surface">
+                <div class="surface-header">
+                  <div>
+                    <p class="surface-kicker" data-i18n="providers.summaryKicker">Provider summary</p>
+                    <h3 data-i18n="providers.summaryHeading">Provider estate at a glance</h3>
+                  </div>
+                </div>
+                <div id="provider-summary-grid" class="provider-summary-grid"></div>
+              </section>
+
+              <section class="surface provider-table-surface">
+                <div class="surface-header">
+                  <div>
+                    <p class="surface-kicker" data-i18n="sections.providersKicker">Provider analytics</p>
+                    <h3 data-i18n="sections.providersTitle">Calls, tokens, and failures</h3>
+                  </div>
+                </div>
+                <div class="table-shell">
+                  <table class="metrics-table">
+                    <thead>
+                      <tr>
+                        <th data-i18n="table.provider">Provider</th>
+                        <th data-i18n="table.status">Status</th>
+                        <th data-i18n="table.requests">Requests</th>
+                        <th data-i18n="table.tokens">Tokens</th>
+                        <th data-i18n="table.failures">Failures</th>
+                        <th data-i18n="table.tokens24h">24h Tokens</th>
+                        <th data-i18n="table.tokens7d">7d Tokens</th>
+                      </tr>
+                    </thead>
+                    <tbody id="provider-metrics-body"></tbody>
+                  </table>
+                </div>
+              </section>
+
+              <section class="surface provider-health-surface">
+                <div class="surface-header">
+                  <div>
+                    <p class="surface-kicker" data-i18n="sections.healthKicker">Health</p>
+                    <h3 data-i18n="sections.healthTitle">Provider state</h3>
+                  </div>
+                </div>
+                <div id="provider-status-grid" class="status-grid"></div>
+              </section>
+            </div>
+          </section>
+
+          <section id="panel-config" class="screen">
+            <section class="surface config-surface">
+              <div class="surface-header">
+                <div>
+                  <p class="surface-kicker" data-i18n="config.kicker">Configuration</p>
+                  <h3 data-i18n="config.title">Runtime config</h3>
+                </div>
+                <button id="save-button" type="button" class="primary-button" data-i18n="config.save">Save config</button>
+              </div>
+
+              <div class="config-tabbar">
+                <button class="config-tab-button active" type="button" data-config-tab="general" data-i18n="config.generalTab">General</button>
+                <button class="config-tab-button" type="button" data-config-tab="routes" data-i18n="config.routesTab">Routes</button>
+                <button class="config-tab-button" type="button" data-config-tab="providers" data-i18n="config.providersTab">Providers</button>
+              </div>
+
+              <form id="config-form" class="config-form">
+                <section id="config-panel-general" class="config-panel active">
+                  <div class="form-grid">
+                    <label><span data-i18n="config.listen">Listen</span><input name="listen" required></label>
+                    <label><span data-i18n="config.mode">Mode</span>
+                      <select name="mode">
+                        <option value="round_robin" data-i18n="config.modeRoundRobinLabel">Round robin</option>
+                        <option value="sequential" data-i18n="config.modeSequentialLabel">Sequential</option>
+                        <option value="least_failures" data-i18n="config.modeLeastFailuresLabel">Least failures</option>
+                      </select>
+                    </label>
+                    <label><span data-i18n="config.failureThreshold">Failure threshold</span><input name="failure_threshold" type="number" min="1" required></label>
+                    <label><span data-i18n="config.cooldown">Cooldown</span><input name="cooldown" required></label>
+                    <label><span data-i18n="config.healthCheckInterval">Health check interval</span><input name="health_check_interval" required></label>
+                    <label><span data-i18n="config.healthCheckTimeout">Health check timeout</span><input name="health_check_timeout" required></label>
+                  </div>
+                  <div class="mode-guide">
+                    <p class="mode-guide-title" data-i18n="config.modeGuideTitle">Mode behavior</p>
+                    <div class="mode-guide-list">
+                      <article class="mode-guide-item">
+                        <strong data-i18n="config.modeRoundRobinLabel">Round robin</strong>
+                        <p data-i18n="config.modeRoundRobinDesc">Rotate requests across healthy providers to spread traffic evenly.</p>
+                      </article>
+                      <article class="mode-guide-item">
+                        <strong data-i18n="config.modeSequentialLabel">Sequential</strong>
+                        <p data-i18n="config.modeSequentialDesc">Always try providers in list order and fail over only when the current one breaks.</p>
+                      </article>
+                      <article class="mode-guide-item">
+                        <strong data-i18n="config.modeLeastFailuresLabel">Least failures</strong>
+                        <p data-i18n="config.modeLeastFailuresDesc">Prefer healthy providers that have accumulated the fewest upstream failures.</p>
+                      </article>
+                    </div>
+                  </div>
+                </section>
+
+                <section id="config-panel-routes" class="config-panel">
+                  <div class="editor-toolbar">
+                    <div>
+                      <p class="surface-kicker" data-i18n="config.routes">Routes</p>
+                    </div>
+                    <button id="add-route" type="button" class="secondary-button" data-i18n="config.addRoute">Add route</button>
+                  </div>
+                  <div id="routes" class="row-stack"></div>
+                </section>
+
+                <section id="config-panel-providers" class="config-panel">
+                  <div class="editor-toolbar">
+                    <div>
+                      <p class="surface-kicker" data-i18n="config.providers">Providers</p>
+                    </div>
+                    <button id="add-provider" type="button" class="secondary-button" data-i18n="config.addProvider">Add provider</button>
+                  </div>
+                  <div id="provider-editor" class="row-stack"></div>
+                </section>
+              </form>
+            </section>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <template id="route-row-template">
+      <div class="editor-row route-row" data-row-type="route">
+        <input data-field="prefix">
+        <select data-field="type">
+          <option value="openai">openai</option>
+          <option value="anthropic">anthropic</option>
+        </select>
+        <input data-field="model">
+        <input data-field="upstream_model">
+        <label class="check"><input data-field="enabled" type="checkbox" checked><span data-role="enabled-text">Enabled</span></label>
+        <button data-action="remove" type="button" class="secondary-button">Remove</button>
+      </div>
+    </template>
+
+    <template id="provider-row-template">
+      <div class="editor-row provider-row" data-row-type="provider">
+        <input data-field="name">
+        <input data-field="base_url">
+        <input data-field="api_key">
+        <label class="check"><input data-field="enabled" type="checkbox" checked><span data-role="enabled-text">Enabled</span></label>
+        <button data-action="remove" type="button" class="secondary-button">Remove</button>
+      </div>
+    </template>
+
+    <script src="./app.js" defer></script>
+  </body>
+</html>
