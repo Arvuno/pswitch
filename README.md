@@ -9,7 +9,7 @@
 [![Built with Go](https://img.shields.io/badge/built%20with-Go%201.26-00ADD8.svg)](https://go.dev/)
 [![Downloads](https://img.shields.io/github/downloads/wlynxg/pswitch/total)](https://github.com/wlynxg/pswitch/releases/latest)
 
-English | [中文](README_ZH.md)
+[English](README.md) | [中文](README_ZH.md)
 
 </div>
 
@@ -52,7 +52,70 @@ By default, `pswitch` starts with a single OpenAI-compatible route on `/codex`. 
 
 ## Quick Start
 
-### Build
+### Download a release
+
+Open [Releases](https://github.com/wlynxg/pswitch/releases/latest) and download the archive that matches your platform:
+
+- Linux x86_64: `pswitch_vX.Y.Z_linux_amd64.tar.gz`
+- Linux ARM64: `pswitch_vX.Y.Z_linux_arm64.tar.gz`
+- macOS Intel: `pswitch_vX.Y.Z_darwin_amd64.tar.gz`
+- macOS Apple Silicon: `pswitch_vX.Y.Z_darwin_arm64.tar.gz`
+- Windows x86_64: `pswitch_vX.Y.Z_windows_amd64.zip`
+
+Extract the archive, then run `pswitch` from the extracted directory.
+
+### Start the service
+
+No config file is required for the first launch.
+
+macOS / Linux:
+
+```bash
+./pswitch
+```
+
+Windows PowerShell:
+
+```powershell
+.\pswitch.exe
+```
+
+By default, `pswitch` listens on `0.0.0.0:8080`, exposes `/codex`, and starts with the built-in config.
+
+### Open the dashboard
+
+On the same machine:
+
+```text
+http://127.0.0.1:8080/dashboard/
+```
+
+From another device on the same network or on a server:
+
+```text
+http://<server-ip>:8080/dashboard/
+```
+
+Use the `Config` page to add providers and save runtime settings. `settings.json` and `metrics.json` are written to the directory where you run the binary.
+
+### Point your client at pswitch
+
+Use the local proxy endpoint:
+
+```text
+http://127.0.0.1:8080/codex
+```
+
+Example Codex-style config:
+
+```toml
+[model_providers.OpenAI]
+base_url = "http://127.0.0.1:8080/codex"
+wire_api = "responses"
+requires_openai_auth = true
+```
+
+### Build from source
 
 ```bash
 make build
@@ -64,7 +127,7 @@ Binary output:
 ./bin/pswitch
 ```
 
-### Run
+### Run from source build
 
 ```bash
 ./bin/pswitch
@@ -74,12 +137,6 @@ Or:
 
 ```bash
 ./bin/pswitch --config ./config.toml
-```
-
-Then open:
-
-```text
-http://127.0.0.1:8080/dashboard/
 ```
 
 ## Default Behavior
@@ -100,26 +157,7 @@ Default file behavior:
 - dashboard metrics go to `./metrics.json`
 - if `settings.json` exists, it takes precedence on startup
 
-## Example Usage
-
-### Codex / OpenAI-style client
-
-Point your client to:
-
-```text
-http://127.0.0.1:8080/codex
-```
-
-Example Codex-style config:
-
-```toml
-[model_providers.OpenAI]
-base_url = "http://127.0.0.1:8080/codex"
-wire_api = "responses"
-requires_openai_auth = true
-```
-
-### Anthropic-style client
+## Anthropic-style client
 
 If you manually add an Anthropic route, you can point a Claude-style client to it:
 
@@ -131,7 +169,7 @@ export ANTHROPIC_API_KEY=dummy
 ## Config Example
 
 ```toml
-listen = "127.0.0.1:8080"
+listen = "0.0.0.0:8080"
 mode = "least_failures"
 failure_threshold = 1
 cooldown = "20s"
@@ -208,3 +246,14 @@ Generate a starter config:
 - `make test` runs the test suite
 - `make init` generates an example config
 - `make clean` removes build artifacts
+
+## Release Automation
+
+GitHub Releases are built automatically when you push a version tag:
+
+```bash
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+The release workflow builds archives for Linux, macOS, and Windows, then uploads them with a `checksums.txt` file.

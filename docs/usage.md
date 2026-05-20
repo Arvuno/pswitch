@@ -10,6 +10,10 @@ Binary output:
 
 - `./bin/pswitch`
 
+## Download a release
+
+Download the matching archive from [GitHub Releases](https://github.com/wlynxg/pswitch/releases/latest), extract it, and run the binary from the extracted directory.
+
 ## Initialize config
 
 ```bash
@@ -50,6 +54,7 @@ Notes:
 
 - Running `./bin/pswitch` starts the service directly; there is no `serve` subcommand anymore.
 - If the config file is missing, `pswitch` starts with the built-in default config.
+- The default listen address is `0.0.0.0:8080`.
 - The default config path is `config.toml` in the binary directory.
 - The user config file is read-only from the program's perspective; dashboard saves go to `settings.json` in the current working directory.
 - Dashboard metrics are persisted in `metrics.json` in the current working directory.

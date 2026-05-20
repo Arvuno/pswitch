@@ -12,6 +12,15 @@ make test
 make build
 ```
 
+## Release
+
+Push a version tag to trigger the multi-platform release workflow:
+
+```bash
+git tag v0.1.0
+git push origin v0.1.0
+```
+
 ## Clean
 
 ```bash

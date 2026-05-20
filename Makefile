@@ -1,8 +1,8 @@
 BIN_DIR := bin
 BINARY := $(BIN_DIR)/pswitch
-CONFIG ?= $(HOME)/.config/pswitch/config.toml
+CONFIG ?= ./config.toml
 MODE ?= round_robin
-LISTEN ?= 127.0.0.1:8080
+LISTEN ?= 0.0.0.0:8080
 LOG_COLOR ?=
 GO ?= go
 
@@ -12,7 +12,7 @@ help:
 	@printf '%s\n' \
 		'Targets:' \
 		'  make build            Build the pswitch binary into ./bin/pswitch' \
-		'  make run              Run pswitch serve with CONFIG=$(CONFIG) and optional LOG_COLOR=$(LOG_COLOR)' \
+		'  make run              Run pswitch with CONFIG=$(CONFIG) and optional LOG_COLOR=$(LOG_COLOR)' \
 		'  make test             Run go test ./...' \
 		'  make init             Generate a sample config at CONFIG=$(CONFIG)' \
 		'  make clean            Remove the build output'
