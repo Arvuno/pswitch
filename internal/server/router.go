@@ -25,6 +25,13 @@ func NewRouter(manager *pruntime.Manager, adminToken string) http.Handler {
 	router.Handle(AdminPrefix, http.RedirectHandler(AdminPrefix+"/", http.StatusPermanentRedirect))
 	router.Handle(AdminPrefix+"/", http.StripPrefix(AdminPrefix, adminHandler))
 	router.Handle(AdminPrefix+"/*", http.StripPrefix(AdminPrefix, adminHandler))
+
+	// Health check endpoint for container orchestrators (K8s, Docker, etc.)
+	router.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("OK"))
+	})
+
 	router.Handle("/*", &dispatcher{manager: manager})
 
 	return router
