@@ -295,3 +295,20 @@ git push origin v0.1.0
 ```
 
 The release workflow builds archives for Linux, macOS, and Windows, uploads them with a `checksums.txt` file, and publishes a multi-arch Docker image to `ghcr.io/wlynxg/pswitch`.
+
+## Troubleshooting
+
+**Dashboard shows no providers**
+Add providers via the `Config` page in the dashboard at `http://127.0.0.1:8080/dashboard/`. Save settings — they are written to `settings.json` in the working directory.
+
+**Requests keep failing over to a provider that appears healthy**
+`least_failures` mode tracks consecutive failures, not time. A provider that had recent failures recovers automatically after the cooldown period. Check the provider health card in the dashboard for failure counts and cooldown status.
+
+**Docker run fails with "port is already allocated"**
+Another process is using port 8080. Stop the existing process or run `pswitch` with `--listen 0.0.0.0:8081` to use a different port.
+
+**Metrics not persisting across restarts**
+Ensure `./data/` is mounted when using Docker: `docker run -v "$(pwd)/data:/data" ...`. Without a mount, metrics are lost on container restart.
+
+**Admin token not working**
+Set `PSWITCH_ADMIN_TOKEN` as an environment variable when starting the container or process. The dashboard and admin API both require it if set.
