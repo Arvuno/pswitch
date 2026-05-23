@@ -56,7 +56,7 @@ Get started with pswitch in under a minute:
 
 **1. Download the latest release:**
 ```bash
-curl -sL https://github.com/wlynxg/pswitch/releases/latest/download/pswitch_v0.1.0_linux_amd64.tar.gz | tar xz
+curl -sL https://github.com/wlynxg/pswitch/releases/latest/download/pswitch_latest_linux_amd64.tar.gz | tar xz
 ```
 
 **2. Start the proxy:**
