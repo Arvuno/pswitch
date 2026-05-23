@@ -50,6 +50,24 @@ By default, `pswitch` starts with a single OpenAI-compatible route on `/codex`. 
 - `settings.json` and `metrics.json` persisted in the current working directory
 - Optional admin token protection with `PSWITCH_ADMIN_TOKEN`
 
+## 🚀 Quickstart
+
+Get started with pswitch in under a minute:
+
+**1. Download the latest release:**
+```bash
+curl -sL https://github.com/wlynxg/pswitch/releases/latest/download/pswitch_v0.1.0_linux_amd64.tar.gz | tar xz
+```
+
+**2. Start the proxy:**
+```bash
+./pswitch
+```
+
+**3. Point your AI client at `http://localhost:8080/codex`**
+
+That's it. Open `http://127.0.0.1:8080/dashboard/` to see the admin dashboard.
+
 ## Quick Start
 
 ### Download a release
