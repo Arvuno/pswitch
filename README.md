@@ -269,6 +269,17 @@ Generate a starter config:
 ./bin/pswitch init
 ```
 
+## Troubleshooting
+
+- `init` writes to `config.toml` in the binary directory by default
+- Dashboard-edited runtime config is written to `settings.json` in the current working directory
+- Usage and provider stats are written to `metrics.json` in the current working directory
+- `api_key` must be non-empty for each provider
+- If one provider fails, `pswitch` will try the next one
+- Health probes only log when a provider recovers
+- If usage is missing in logs, the upstream response did not include token usage
+- If `/claude` is enabled, make sure its route has `upstream_model`
+
 ## Documentation
 
 - [Configuration](docs/config.md)
