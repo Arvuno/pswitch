@@ -102,7 +102,7 @@ requires_openai_auth = true
 
 ## Claude Code
 
-If you manually add an Anthropic-compatible route later, you can point Claude Code to it:
+If you mannually add an Anthropic-compatible route later, you can point Claude Code to it:
 
 ```bash
 export ANTHROPIC_BASE_URL=http://127.0.0.1:8080/claude

@@ -197,7 +197,7 @@ Default file behavior:
 
 ## Anthropic-style client
 
-If you manually add an Anthropic route, you can point a Claude-style client to it:
+If you mannually add an Anthropic route, you can point a Claude-style client to it:
 
 ```bash
 export ANTHROPIC_BASE_URL=http://127.0.0.1:8080/claude
