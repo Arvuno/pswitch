@@ -306,3 +306,9 @@ git push origin v0.1.0
 ```
 
 The release workflow builds archives for Linux, macOS, and Windows, uploads them with a `checksums.txt` file, and publishes a multi-arch Docker image to `ghcr.io/wlynxg/pswitch`.
+
+## Contributing
+
+We welcome contributions! Please feel free to submit a Pull Request or open an issue for bug reports and feature suggestions.
+
+- Improved documentation clarity
