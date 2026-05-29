@@ -309,3 +309,5 @@ The release workflow builds archives for Linux, macOS, and Windows, uploads them
 
 ## Contributing
 PRs welcome!
+<!-- Contributor: Arvuno - documentation update -->
+
